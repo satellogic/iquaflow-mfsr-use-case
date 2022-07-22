@@ -18,13 +18,13 @@ def scatter_plots(df):
             'ssim',
             'gmsd',
             'fid',
-            'rer_0'
+            'RER_other'
         ],
         [
             'psnr',
             'mdsi',
             'swd',
-            'snr'
+            'snr_median'
         ]
     ):
 
