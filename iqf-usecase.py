@@ -15,7 +15,8 @@ from iquaflow.datasets import DSModifier, DSWrapper,DSModifier_jpg
 from iquaflow.experiments import ExperimentInfo, ExperimentSetup
 from iquaflow.experiments.experiment_visual import ExperimentVisual
 from iquaflow.experiments.task_execution import PythonScriptTaskExecution
-from iquaflow.metrics import BBDetectionMetrics, SNRMetric , RERMetric
+from iquaflow.metrics import BBDetectionMetrics, SNRMetric
+from iquaflow.metrics import SharpnessMetric as RERMetric
 
 from custom_iqf import DSModifierMFSR, SimilarityMetricsForMFSR, SlicedWassersteinMetric
 
@@ -37,7 +38,7 @@ ds_modifiers_list = [
     DSModifierMFSR( params={
         'algo':algo,
         'zoom': 3,
-        'n_jobs': 17
+        'n_jobs': 80
     } )
     for algo in [
         'fake',
@@ -105,7 +106,7 @@ experiment_info = ExperimentInfo(experiment_name)
 print('Calculating similarity metrics...')
 
 _ = experiment_info.apply_metric_per_run(
-    SimilarityMetricsForMFSR( experiment_info, cut=12//2,  n_jobs=15 ),
+    SimilarityMetricsForMFSR( experiment_info, cut=12//2,  n_jobs=-1 ),
     ds_wrapper.json_annotations,
 )
 
@@ -116,7 +117,7 @@ win = 128
 _ = experiment_info.apply_metric_per_run(
     SlicedWassersteinMetric(
         experiment_info,
-        n_jobs               = 15,
+        n_jobs               = -1,
         ext                  = 'png',
         n_pyramids           = 1,
         slice_size           = 7,
@@ -135,23 +136,18 @@ print('Calculating RER Metric...')
 _ = experiment_info.apply_metric_per_run(
     RERMetric(
         experiment_info,
-        win=16,
-        stride=16,
         ext="png",
-        n_jobs=15
+        window_size=64,
     ),
     ds_wrapper.json_annotations,
 )
 
 print('Calculating SNR Metric...')
 
-_ = experiment_info.apply_metric_per_run(
-    SNRMetric(
-        experiment_info,
-        ext="png",
-        patch_sizes=[30],
-        confidence_limit=50.0,
-        n_jobs=15
-    ),
-    ds_wrapper.json_annotations,
-)
+__ = experiment_info.apply_metric_per_run(
+     SNRMetric(
+         experiment_info,
+         ext="png"
+     ),
+     ds_wrapper.json_annotations,
+ )
